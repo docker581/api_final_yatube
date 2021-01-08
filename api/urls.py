@@ -9,8 +9,8 @@ from rest_framework_simplejwt.views import (
 from .views import (
     PostModelViewSet,
     CommentModelViewSet, 
-    GroupModelViewSet,
-    FollowModelViewSet,
+    GroupViewset,
+    FollowViewset,
 )
 
 router = DefaultRouter()
@@ -20,8 +20,8 @@ router.register(
     basename='comments',
  )
 router.register(r'posts', PostModelViewSet, basename='posts')
-router.register(r'group', GroupModelViewSet, basename='groups')
-router.register(r'follow', FollowModelViewSet, basename='followers') 
+router.register(r'group', GroupViewset, basename='groups')
+router.register(r'follow', FollowViewset, basename='followers') 
 
 urlpatterns = router.urls
 urlpatterns += [
