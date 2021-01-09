@@ -5,7 +5,6 @@ from rest_framework.permissions import (
 )
 from rest_framework.viewsets import ModelViewSet, ViewSet, GenericViewSet
 from rest_framework.decorators import permission_classes
-from rest_framework.response import Response
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 
 from .serializers import (
@@ -20,7 +19,6 @@ from .permissions import IsOwnerOrReadOnly
 
 @permission_classes([IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly])
 class PostModelViewSet(ModelViewSet):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
 
     def get_queryset(self):  
@@ -36,12 +34,12 @@ class PostModelViewSet(ModelViewSet):
 
 @permission_classes([IsAuthenticated, IsOwnerOrReadOnly])
 class CommentModelViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
-        return Comment.objects.filter(post=post_id)   
+        queryset = Comment.objects.filter(post=post_id)
+        return queryset   
 
     def perform_create(self, serializer):
         post = Post.objects.get(id=self.kwargs.get('post_id'))
@@ -56,21 +54,16 @@ class GroupViewset(CreateModelMixin, ListModelMixin, GenericViewSet):
 
 @permission_classes([IsAuthenticated, IsOwnerOrReadOnly])
 class FollowViewset(CreateModelMixin, ListModelMixin, GenericViewSet):
-    def list(self, request):       
-        follow = self.request.user.following.all()
+    serializer_class = FollowSerializer
+    # DEFAULT_FILTER_BACKENDS подключен на уровне всего проекта
+
+    def get_queryset(self):
+        queryset = self.request.user.following.all()
         username = self.request.query_params.get('search', None)
         if username is not None:
             user_id = User.objects.get(username=username).id
-            follow = follow.filter(user=user_id)
-        serializer = FollowSerializer(follow, many=True)
-        return Response(serializer.data)
+            queryset = queryset.filter(user=user_id)
+        return queryset
 
-    def create(self, request):
-        serializer = FollowSerializer(
-            data=request.data, 
-            context={'request': self.request},
-        )
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)               
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)               

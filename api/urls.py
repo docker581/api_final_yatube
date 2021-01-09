@@ -15,23 +15,23 @@ from .views import (
 
 router = DefaultRouter()
 router.register(
-    r'posts/(?P<post_id>\d+)/comments', 
+    r'v1/posts/(?P<post_id>\d+)/comments', 
     CommentModelViewSet, 
     basename='comments',
  )
-router.register(r'posts', PostModelViewSet, basename='posts')
-router.register(r'group', GroupViewset, basename='groups')
-router.register(r'follow', FollowViewset, basename='followers') 
+router.register(r'v1/posts', PostModelViewSet, basename='posts')
+router.register(r'v1/group', GroupViewset, basename='groups')
+router.register(r'v1/follow', FollowViewset, basename='followers') 
 
 urlpatterns = router.urls
 urlpatterns += [
     path(
-        'token/', 
+        'v1/token/', 
         TokenObtainPairView.as_view(), 
         name='token_obtain_pair',
     ),
     path(
-        'token/refresh/', 
+        'v1/token/refresh/', 
         TokenRefreshView.as_view(), 
         name='token_refresh',
     ),
